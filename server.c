@@ -17,7 +17,6 @@ int tcp_listen(int host, int port, int backlog) {
 		perror("socket fail");
 		exit(1);
 	}
-	// servaddr 구조체의 내용 세팅
 	bzero((char *)&servaddr, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(host);
@@ -25,7 +24,6 @@ int tcp_listen(int host, int port, int backlog) {
 	if (bind(sd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
 		perror("bind fail");  exit(1);
 	}
-	// 클라이언트로부터 연결요청을 기다림
 	listen(sd, backlog);
 	return sd;
 }
@@ -46,7 +44,7 @@ int main(int argc, char *argv[])
 	while (1) {
 		recv(sock2, buf, 100, 0);
 		sscanf(buf, "%s", command);
-		if (!strcmp(command, "ls")) {//ls명령어를 입력받았다면
+		if (!strcmp(command, "ls")) {
 			system("ls >temps.txt");
 			stat("temps.txt", &obj);
 			size = obj.st_size;
@@ -54,7 +52,7 @@ int main(int argc, char *argv[])
 			filehandle = open("temps.txt", O_RDONLY);
 			sendfile(sock2, filehandle, NULL, size);
 		}
-		else if (!strcmp(command, "get")) {//get명령어를 입력받았다면
+		else if (!strcmp(command, "get")) {
 			sscanf(buf, "%s%s", filename, filename);
 			stat(filename, &obj);
 			filehandle = open(filename, O_RDONLY);
@@ -66,7 +64,7 @@ int main(int argc, char *argv[])
 				sendfile(sock2, filehandle, NULL, size);
 
 		}
-		else if (!strcmp(command, "put")) {//put명령어를 입력받았다면
+		else if (!strcmp(command, "put")) {
 			int c = 0, len;
 			char *f;
 			sscanf(buf + strlen(command), "%s", filename);
@@ -84,7 +82,7 @@ int main(int argc, char *argv[])
 			close(filehandle);
 			send(sock2, &c, sizeof(int), 0);
 		}
-		else if (!strcmp(command, "pwd")) {//pwd명령어를 입력받았다면
+		else if (!strcmp(command, "pwd")) {
 			system("pwd>temp.txt");
 			i = 0;
 			FILE*f = fopen("temp.txt", "r");
@@ -93,13 +91,13 @@ int main(int argc, char *argv[])
 			fclose(f);
 			send(sock2, buf, 100, 0);
 		}
-		else if (!strcmp(command, "cd")) {//cd명령어를 입력받았다면
+		else if (!strcmp(command, "cd")) {
 			if (chdir(buf + 3) == 0) c = 1;
 			else c = 0;	
 			send(sock2, &c, sizeof(int), 0);
 		}
 		else if (!strcmp(command, "bye") || !strcmp(command, "quit")) {
-		//종료 명령어를 입력받았다면
+		
 			printf("FTP server quitting..\n");
 			i = 1;
 			send(sock2, &i, sizeof(int), 0);
